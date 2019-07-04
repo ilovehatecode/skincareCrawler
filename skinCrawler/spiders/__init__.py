@@ -19,10 +19,8 @@ class SkincareSpider(scrapy.Spider):
         product_link_list = response.css('.a-link-normal.a-text-normal::attr(href)').getall()
         for product_link in product_link_list:
             if product_link is not None:
-##                yield {
-##                 "product_link" : product_link
                 yield response.follow(product_link, callback=self.parseProductPage)
-##             }
+
         
     def parseProductPage(self, response):
         important_content = response.css('#importantInformation .content').get()
@@ -33,7 +31,6 @@ class SkincareSpider(scrapy.Spider):
             ingred_list = important_content[startIndex:endIndex]
             self.log("Ingredient List: %s" % ingred_list)
             if ingred_list is not None:
-                self.log("Running this part")
                 yield
                 {
                     'ingredient_list' : ingred_list
