@@ -6,10 +6,11 @@
 # Crawl Amazon.com for skincare products
 
 import scrapy
-
+import json
 
 class SkincareSpider(scrapy.Spider):
     name = "skincare"
+    json_array = list()
     start_urls = urls = [
             'https://www.amazon.com/s?i=beauty&rh=n%3A3760911%2Cn%3A11055981%2Cn%3A11060451%2Cn%3A11060711&s=featured-rank&qid=1562260218&ref=sr_st_featured-rank'
         ]
@@ -20,6 +21,7 @@ class SkincareSpider(scrapy.Spider):
         for product_link in product_link_list:
             if product_link is not None:
                 yield response.follow(product_link, callback=self.parseProductPage)
+        
 
         
     def parseProductPage(self, response):
@@ -29,10 +31,15 @@ class SkincareSpider(scrapy.Spider):
             startIndex = important_content.find('>', startIndex) + 1
             endIndex = important_content.find('<', startIndex)
             ingred_list = important_content[startIndex:endIndex]
-            self.log("Ingredient List: %s" % ingred_list)
+ ##           self.log("Ingredient List: %s" % ingred_list)
             if ingred_list is not None:
+                self.json_array.append(dict(ingredient=ingred_list))
                 yield
                 {
                     'ingredient_list' : ingred_list
                 }
-            
+        self.writeToJson()
+    def writeToJson(self):
+        f = open('skincare.json', 'wb')
+        json.dump(self.json_array, f)
+        return 
