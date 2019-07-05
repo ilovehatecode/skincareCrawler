@@ -18,10 +18,13 @@ class SkincareSpider(scrapy.Spider):
     def parse(self, response):
  ##       product_link_list = response.css('.s-line-clamp-4 a::attr(href)').getall()
         product_link_list = response.css('.a-link-normal.a-text-normal::attr(href)').getall()
+        next_page = response.css('.a-last a::attr(href)').get()
         for product_link in product_link_list:
             if product_link is not None:
                 yield response.follow(product_link, callback=self.parseProductPage)
         
+        if next_page is not None:
+            yield response.follow(next_page, callback=self.parse)
 
         
     def parseProductPage(self, response):
@@ -34,11 +37,9 @@ class SkincareSpider(scrapy.Spider):
  ##           self.log("Ingredient List: %s" % ingred_list)
             if ingred_list is not None:
                 self.json_array.append(dict(ingredient=ingred_list))
-                yield
-                {
-                    'ingredient_list' : ingred_list
-                }
         self.writeToJson()
+        
+        
     def writeToJson(self):
         f = open('skincare.json', 'wb')
         json.dump(self.json_array, f)
